@@ -79,7 +79,7 @@ $categories = get_category_tree();
               <?php foreach ($categories as $parentCat): ?>
                 <option value="<?= (int)$parentCat['category']['id'] ?>" <?= (string)$old['category_id']===(string)$parentCat['category']['id']?'selected':'' ?>><?= e($parentCat['category']['name']) ?></option>
                 <?php foreach ($parentCat['children'] as $childCat): ?>
-                  <option value="<?= (int)$childCat['id'] ?>" <?= (string)$old['category_id']===(string)$childCat['id']?'selected':'' ?>>— <?= e($childCat['name']) ?></option>
+                  <option value="<?= (int)$childCat['id'] ?>" <?= (string)$old['category_id']===(string)$childCat['id']?'selected':'' ?>>  ↳ <?= e($childCat['name']) ?></option>
                 <?php endforeach; ?>
               <?php endforeach; ?>
             </select>

@@ -37,7 +37,7 @@ $categories = get_category_tree();
           <?php foreach ($categories as $parentCat): ?>
             <option value="<?= (int)$parentCat['category']['id'] ?>" <?= $catFilter===(int)$parentCat['category']['id']?'selected':'' ?>><?= e($parentCat['category']['name']) ?></option>
             <?php foreach ($parentCat['children'] as $childCat): ?>
-              <option value="<?= (int)$childCat['id'] ?>" <?= $catFilter===(int)$childCat['id']?'selected':'' ?>>— <?= e($childCat['name']) ?></option>
+              <option value="<?= (int)$childCat['id'] ?>" <?= $catFilter===(int)$childCat['id']?'selected':'' ?>>  ↳ <?= e($childCat['name']) ?></option>
             <?php endforeach; ?>
           <?php endforeach; ?>
         </select>

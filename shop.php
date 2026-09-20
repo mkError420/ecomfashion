@@ -111,7 +111,7 @@ include __DIR__ . '/includes/header.php';
           <?php foreach ($categories as $parentCat): ?>
             <label><input type="radio" name="category" value="<?= e($parentCat['category']['slug']) ?>" <?= $catSlug===$parentCat['category']['slug']?'checked':'' ?>> <?= e($parentCat['category']['name']) ?></label>
             <?php foreach ($parentCat['children'] as $childCat): ?>
-              <label style="padding-left:20px"><input type="radio" name="category" value="<?= e($childCat['slug']) ?>" <?= $catSlug===$childCat['slug']?'checked':'' ?>> <?= e($childCat['name']) ?></label>
+              <label style="padding-left:20px"><input type="radio" name="category" value="<?= e($childCat['slug']) ?>" <?= $catSlug===$childCat['slug']?'checked':'' ?>> ↳ <?= e($childCat['name']) ?></label>
             <?php endforeach; ?>
           <?php endforeach; ?>
         </div>
