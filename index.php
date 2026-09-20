@@ -64,10 +64,15 @@ include __DIR__ . '/includes/header.php';
     <h2 class="section-title">Shop by Category</h2>
     <p class="section-sub">Find exactly what you're looking for.</p>
     <div class="cat-grid">
-      <?php foreach (get_categories() as $c): ?>
-        <a class="cat-card" style="background:<?= $catColors[$c['slug']] ?? 'linear-gradient(135deg,#191713,#8f887b)' ?>"
-           href="<?= BASE_URL ?>/shop.php?category=<?= e($c['slug']) ?>">
-          <span><?= e($c['name']) ?></span>
+      <?php foreach (get_category_tree() as $parentCat): ?>
+        <a class="cat-card" style="background:<?= $catColors[$parentCat['category']['slug']] ?? 'linear-gradient(135deg,#191713,#8f887b)' ?>"
+           href="<?= BASE_URL ?>/shop.php?category=<?= e($parentCat['category']['slug']) ?>">
+          <span><?= e($parentCat['category']['name']) ?></span>
+          <?php if (!empty($parentCat['children'])): ?>
+            <div style="font-size:0.75rem;opacity:0.8;margin-top:4px">
+              <?= count($parentCat['children']) ?> sub-categorie<?= count($parentCat['children']) > 1 ? 's' : '' ?>
+            </div>
+          <?php endif; ?>
         </a>
       <?php endforeach; ?>
     </div>

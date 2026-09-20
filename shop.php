@@ -2,7 +2,7 @@
 require_once __DIR__ . '/config/db.php';
 $activeNav = 'shop';
 
-$categories = get_categories();
+$categories = get_category_tree();
 $q = trim($_GET['q'] ?? '');
 $catSlug = $_GET['category'] ?? '';
 $sort = $_GET['sort'] ?? 'newest';
@@ -13,7 +13,26 @@ $onSale = isset($_GET['sale']) && $_GET['sale'] === '1';
 $where = [];
 $params = [];
 if ($q !== '') { $where[] = '(p.name LIKE ? OR p.description LIKE ?)'; $params[] = "%$q%"; $params[] = "%$q%"; }
-if ($catSlug !== '') { $where[] = 'c.slug = ?'; $params[] = $catSlug; }
+if ($catSlug !== '') {
+    $selectedCat = get_category_by_slug($catSlug);
+    if ($selectedCat) {
+        if ($selectedCat['parent_id'] === null) {
+            // Parent category selected - include all sub-categories
+            $subCats = get_subcategories($selectedCat['id']);
+            $catIds = [$selectedCat['id']];
+            foreach ($subCats as $sub) {
+                $catIds[] = $sub['id'];
+            }
+            $placeholders = implode(',', array_fill(0, count($catIds), '?'));
+            $where[] = "p.category_id IN ($placeholders)";
+            $params = array_merge($params, $catIds);
+        } else {
+            // Sub-category selected - only this category
+            $where[] = 'c.slug = ?';
+            $params[] = $catSlug;
+        }
+    }
+}
 if ($minP !== null) { $where[] = 'COALESCE(NULLIF(p.sale_price,0), p.price) >= ?'; $params[] = $minP; }
 if ($maxP !== null) { $where[] = 'COALESCE(NULLIF(p.sale_price,0), p.price) <= ?'; $params[] = $maxP; }
 if ($onSale) { $where[] = 'p.sale_price > 0'; }
@@ -48,6 +67,14 @@ $products = $stmt->fetchAll();
 $currentCat = $catSlug ? get_category_by_slug($catSlug) : null;
 $pageTitle = $currentCat ? $currentCat['name'] : ($q !== '' ? "Search: $q" : 'Shop');
 
+// Get parent category for breadcrumb if viewing a sub-category
+$parentCat = null;
+if ($currentCat && $currentCat['parent_id']) {
+    $stmt = db()->prepare('SELECT * FROM categories WHERE id = ? LIMIT 1');
+    $stmt->execute([$currentCat['parent_id']]);
+    $parentCat = $stmt->fetch() ?: null;
+}
+
 function qs(array $overrides): string {
     $merged = array_merge($_GET, $overrides);
     return htmlspecialchars(http_build_query($merged), ENT_QUOTES);
@@ -67,6 +94,7 @@ include __DIR__ . '/includes/header.php';
   <div class="breadcrumb">
     <a href="<?= BASE_URL ?>/index.php">Home</a><span>/</span>
     <a href="<?= BASE_URL ?>/shop.php">Shop</a>
+    <?php if ($parentCat): ?><span>/</span><a href="<?= BASE_URL ?>/shop.php?category=<?= e($parentCat['slug']) ?>"><?= e($parentCat['name']) ?></a><?php endif; ?>
     <?php if ($currentCat): ?><span>/</span><?= e($currentCat['name']) ?><?php endif; ?>
   </div>
 
@@ -80,8 +108,11 @@ include __DIR__ . '/includes/header.php';
         <div class="filter-group">
           <h4>Category</h4>
           <label><input type="radio" name="category" value="" <?= $catSlug===''?'checked':'' ?>> All</label>
-          <?php foreach ($categories as $c): ?>
-            <label><input type="radio" name="category" value="<?= e($c['slug']) ?>" <?= $catSlug===$c['slug']?'checked':'' ?>> <?= e($c['name']) ?></label>
+          <?php foreach ($categories as $parentCat): ?>
+            <label><input type="radio" name="category" value="<?= e($parentCat['category']['slug']) ?>" <?= $catSlug===$parentCat['category']['slug']?'checked':'' ?>> <?= e($parentCat['category']['name']) ?></label>
+            <?php foreach ($parentCat['children'] as $childCat): ?>
+              <label style="padding-left:20px"><input type="radio" name="category" value="<?= e($childCat['slug']) ?>" <?= $catSlug===$childCat['slug']?'checked':'' ?>> <?= e($childCat['name']) ?></label>
+            <?php endforeach; ?>
           <?php endforeach; ?>
         </div>
 

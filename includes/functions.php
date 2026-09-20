@@ -297,6 +297,38 @@ function get_categories(): array
     return db()->query('SELECT * FROM categories ORDER BY name ASC')->fetchAll();
 }
 
+function get_parent_categories(): array
+{
+    return db()->query('SELECT * FROM categories WHERE parent_id IS NULL ORDER BY name ASC')->fetchAll();
+}
+
+function get_subcategories(int $parentId): array
+{
+    $stmt = db()->prepare('SELECT * FROM categories WHERE parent_id = ? ORDER BY name ASC');
+    $stmt->execute([$parentId]);
+    return $stmt->fetchAll();
+}
+
+function get_category_tree(): array
+{
+    $categories = get_categories();
+    $tree = [];
+    foreach ($categories as $cat) {
+        if ($cat['parent_id'] === null) {
+            $tree[$cat['id']] = [
+                'category' => $cat,
+                'children' => []
+            ];
+        }
+    }
+    foreach ($categories as $cat) {
+        if ($cat['parent_id'] !== null && isset($tree[$cat['parent_id']])) {
+            $tree[$cat['parent_id']]['children'][] = $cat;
+        }
+    }
+    return $tree;
+}
+
 function get_category_by_slug(string $slug): ?array
 {
     $stmt = db()->prepare('SELECT * FROM categories WHERE slug = ? LIMIT 1');

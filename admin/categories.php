@@ -13,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = trim($_POST['name'] ?? '');
     $slug = slugify(trim($_POST['slug'] ?? '') ?: $name);
     $desc = trim($_POST['description'] ?? '');
+    $parentId = (int)($_POST['parent_id'] ?? 0);
     $cid = (int)($_POST['id'] ?? 0);
     if ($name === '') {
         flash_set('error','Category name is required.');
@@ -20,18 +21,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         db()->prepare('DELETE FROM categories WHERE id=?')->execute([(int)$_POST['delete']]);
         flash_set('success','Category deleted.');
     } elseif ($cid > 0) {
-        db()->prepare('UPDATE categories SET name=?,slug=?,description=? WHERE id=?')->execute([$name,$slug,$desc ?: null,$cid]);
+        db()->prepare('UPDATE categories SET name=?,slug=?,description=?,parent_id=? WHERE id=?')->execute([$name,$slug,$desc ?: null,$parentId ?: null,$cid]);
         flash_set('success','Category updated.');
     } else {
-        db()->prepare('INSERT INTO categories (name,slug,description) VALUES (?,?,?)')->execute([$name,$slug,$desc ?: null]);
+        db()->prepare('INSERT INTO categories (name,slug,description,parent_id) VALUES (?,?,?,?)')->execute([$name,$slug,$desc ?: null,$parentId ?: null]);
         flash_set('success','Category added.');
     }
     redirect('admin/categories.php');
 }
 
 $categories = db()->query(
-  'SELECT c.*, (SELECT COUNT(*) FROM products p WHERE p.category_id=c.id) AS product_count
-   FROM categories c ORDER BY c.name')->fetchAll();
+  'SELECT c.*, parent.name AS parent_name, (SELECT COUNT(*) FROM products p WHERE p.category_id=c.id) AS product_count
+   FROM categories c LEFT JOIN categories parent ON parent.id=c.parent_id ORDER BY c.name')->fetchAll();
+
+$parentCategories = db()->query('SELECT * FROM categories WHERE parent_id IS NULL ORDER BY name ASC')->fetchAll();
 ?>
 
 <div class="dash-grid" style="grid-template-columns:1fr 1.6fr">
@@ -43,6 +46,14 @@ $categories = db()->query(
         <?php if ($edit): ?><input type="hidden" name="id" value="<?= (int)$edit['id'] ?>"><?php endif; ?>
         <div class="field"><label>Name *</label><input name="name" value="<?= e($edit['name'] ?? '') ?>" required></div>
         <div class="field"><label>Slug</label><input name="slug" value="<?= e($edit['slug'] ?? '') ?>" placeholder="auto"></div>
+        <div class="field"><label>Parent Category</label>
+          <select name="parent_id">
+            <option value="">— None (Top-level) —</option>
+            <?php foreach ($parentCategories as $pc): ?>
+              <option value="<?= (int)$pc['id'] ?>" <?= (string)($edit['parent_id'] ?? '') === (string)$pc['id'] ? 'selected' : '' ?>><?= e($pc['name']) ?></option>
+            <?php endforeach; ?>
+          </select>
+        </div>
         <div class="field"><label>Description</label><textarea name="description" style="min-height:80px"><?= e($edit['description'] ?? '') ?></textarea></div>
         <div style="display:flex;gap:10px">
           <button class="btn btn-primary" type="submit"><?= $edit?'Update':'Add' ?></button>
@@ -56,11 +67,12 @@ $categories = db()->query(
     <div class="panel-head"><h2>All Categories (<?= count($categories) ?>)</h2></div>
     <div style="overflow-x:auto">
     <table class="data">
-      <thead><tr><th>Name</th><th>Slug</th><th>Products</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Parent</th><th>Slug</th><th>Products</th><th>Actions</th></tr></thead>
       <tbody>
       <?php foreach ($categories as $c): ?>
         <tr>
           <td data-label="Name"><strong><?= e($c['name']) ?></strong><br><span class="muted" style="font-size:.8rem"><?= e($c['description']) ?></span></td>
+          <td data-label="Parent"><?= $c['parent_name'] ? e($c['parent_name']) : '—' ?></td>
           <td data-label="Slug"><code><?= e($c['slug']) ?></code></td>
           <td data-label="Products"><?= (int)$c['product_count'] ?></td>
           <td data-label="Actions">

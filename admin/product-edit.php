@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 require_once __DIR__ . '/includes/header.php';
-$categories = get_categories();
+$categories = get_category_tree();
 ?>
 
 <div class="panel">
@@ -76,7 +76,12 @@ $categories = get_categories();
           <div class="field"><label>Category</label>
             <select name="category_id">
               <option value="">— Uncategorized —</option>
-              <?php foreach ($categories as $c): ?><option value="<?= (int)$c['id'] ?>" <?= (string)$old['category_id']===(string)$c['id']?'selected':'' ?>><?= e($c['name']) ?></option><?php endforeach; ?>
+              <?php foreach ($categories as $parentCat): ?>
+                <option value="<?= (int)$parentCat['category']['id'] ?>" <?= (string)$old['category_id']===(string)$parentCat['category']['id']?'selected':'' ?>><?= e($parentCat['category']['name']) ?></option>
+                <?php foreach ($parentCat['children'] as $childCat): ?>
+                  <option value="<?= (int)$childCat['id'] ?>" <?= (string)$old['category_id']===(string)$childCat['id']?'selected':'' ?>>— <?= e($childCat['name']) ?></option>
+                <?php endforeach; ?>
+              <?php endforeach; ?>
             </select>
           </div>
           <div class="field"><label>Description</label><textarea name="description"><?= e($old['description']) ?></textarea></div>
