@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="750" viewBox="0 0 600 750" role="img" aria-label="Katan Silk Saree">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#2e2b26"/>
+      <stop offset="100%" stop-color="#6e675c"/>
+    </linearGradient>
+  </defs>
+  <rect width="600" height="750" fill="url(#g)"/>
+  <circle cx="480" cy="120" r="150" fill="rgba(255,255,255,0.06)"/>
+  <circle cx="90" cy="640" r="130" fill="rgba(0,0,0,0.10)"/>
+  <path d="M300 150 c-40 0-70 25-70 60 0 25 12 40 12 55 l-42 250 c-4 24 14 40 40 40 h120 c26 0 44-16 40-40 l-42-250 c0-15 12-30 12-55 0-35-30-60-70-60 z" fill="rgba(255,255,255,0.12)"/>
+  <text x="40" y="700" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#f5f2ec">Katan Silk Saree</text>
+  <text x="40" y="60" font-family="Segoe UI, Arial, sans-serif" font-size="22" letter-spacing="3" fill="rgba(245,242,236,0.8)">RONGDHONU</text>
+</svg>

@@ -1,0 +1,5 @@
+# uploads/ holds user-uploaded images. Block any script execution here.
+Options -Indexes
+<FilesMatch "\.(php|phtml|php3|php4|php5|php7|phar|pl|py|cgi|sh|htaccess)$">
+  Require all denied
+</FilesMatch>

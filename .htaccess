@@ -1,0 +1,7 @@
+# Rongdhonu Fashion — Apache config (shared-hosting safe)
+Options -Indexes
+
+# Block direct web access to sensitive files
+<FilesMatch "\.(sql|md|log|ini|env)$">
+  Require all denied
+</FilesMatch>
