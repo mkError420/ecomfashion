@@ -23,7 +23,7 @@ $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 $stmt = db()->prepare("SELECT p.*, c.name AS category_name FROM products p LEFT JOIN categories c ON c.id=p.category_id $whereSql ORDER BY p.created_at DESC");
 $stmt->execute($params);
 $products = $stmt->fetchAll();
-$categories = get_category_tree();
+$categories = get_flat_categories_with_hierarchy();
 ?>
 
 <div class="panel">
@@ -34,11 +34,10 @@ $categories = get_category_tree();
         <input type="search" name="q" value="<?= e($q) ?>" placeholder="Search…" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px">
         <select name="cat" style="padding:8px 12px;border:1px solid var(--line);border-radius:8px">
           <option value="0">All categories</option>
-          <?php foreach ($categories as $parentCat): ?>
-            <option value="<?= (int)$parentCat['category']['id'] ?>" <?= $catFilter===(int)$parentCat['category']['id']?'selected':'' ?>><?= e($parentCat['category']['name']) ?></option>
-            <?php foreach ($parentCat['children'] as $childCat): ?>
-              <option value="<?= (int)$childCat['id'] ?>" <?= $catFilter===(int)$childCat['id']?'selected':'' ?>>  ↳ <?= e($childCat['name']) ?></option>
-            <?php endforeach; ?>
+          <?php foreach ($categories as $catData): ?>
+            <option value="<?= (int)$catData['category']['id'] ?>" <?= $catFilter===(int)$catData['category']['id']?'selected':'' ?>>
+              <?= $catData['level'] > 0 ? '  ↳ ' : '' ?><?= e($catData['category']['name']) ?>
+            </option>
           <?php endforeach; ?>
         </select>
         <button class="btn btn-ghost btn-sm" type="submit">Filter</button>

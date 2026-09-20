@@ -109,10 +109,16 @@ include __DIR__ . '/includes/header.php';
           <h4>Category</h4>
           <label><input type="radio" name="category" value="" <?= $catSlug===''?'checked':'' ?>> All</label>
           <?php foreach ($categories as $parentCat): ?>
-            <label><input type="radio" name="category" value="<?= e($parentCat['category']['slug']) ?>" <?= $catSlug===$parentCat['category']['slug']?'checked':'' ?>> <?= e($parentCat['category']['name']) ?></label>
-            <?php foreach ($parentCat['children'] as $childCat): ?>
-              <label style="padding-left:20px"><input type="radio" name="category" value="<?= e($childCat['slug']) ?>" <?= $catSlug===$childCat['slug']?'checked':'' ?>> ↳ <?= e($childCat['name']) ?></label>
-            <?php endforeach; ?>
+            <div style="margin-top:8px">
+              <label style="font-weight:600"><input type="radio" name="category" value="<?= e($parentCat['category']['slug']) ?>" <?= $catSlug===$parentCat['category']['slug']?'checked':'' ?>> <?= e($parentCat['category']['name']) ?></label>
+              <?php if (!empty($parentCat['children'])): ?>
+                <div style="padding-left:20px;margin-top:4px">
+                  <?php foreach ($parentCat['children'] as $childCat): ?>
+                    <label style="font-size:0.9em"><input type="radio" name="category" value="<?= e($childCat['slug']) ?>" <?= $catSlug===$childCat['slug']?'checked':'' ?>> ↳ <?= e($childCat['name']) ?></label>
+                  <?php endforeach; ?>
+                </div>
+              <?php endif; ?>
+            </div>
           <?php endforeach; ?>
         </div>
 

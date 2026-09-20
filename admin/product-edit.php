@@ -60,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 require_once __DIR__ . '/includes/header.php';
-$categories = get_category_tree();
+$categories = get_flat_categories_with_hierarchy();
 ?>
 
 <div class="panel">
@@ -76,11 +76,10 @@ $categories = get_category_tree();
           <div class="field"><label>Category</label>
             <select name="category_id">
               <option value="">— Uncategorized —</option>
-              <?php foreach ($categories as $parentCat): ?>
-                <option value="<?= (int)$parentCat['category']['id'] ?>" <?= (string)$old['category_id']===(string)$parentCat['category']['id']?'selected':'' ?>><?= e($parentCat['category']['name']) ?></option>
-                <?php foreach ($parentCat['children'] as $childCat): ?>
-                  <option value="<?= (int)$childCat['id'] ?>" <?= (string)$old['category_id']===(string)$childCat['id']?'selected':'' ?>>  ↳ <?= e($childCat['name']) ?></option>
-                <?php endforeach; ?>
+              <?php foreach ($categories as $catData): ?>
+                <option value="<?= (int)$catData['category']['id'] ?>" <?= (string)$old['category_id']===(string)$catData['category']['id']?'selected':'' ?>>
+                  <?= $catData['level'] > 0 ? '  ↳ ' : '' ?><?= e($catData['category']['name']) ?>
+                </option>
               <?php endforeach; ?>
             </select>
           </div>

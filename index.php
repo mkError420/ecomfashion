@@ -65,15 +65,21 @@ include __DIR__ . '/includes/header.php';
     <p class="section-sub">Find exactly what you're looking for.</p>
     <div class="cat-grid">
       <?php foreach (get_category_tree() as $parentCat): ?>
-        <a class="cat-card" style="background:<?= $catColors[$parentCat['category']['slug']] ?? 'linear-gradient(135deg,#191713,#8f887b)' ?>"
-           href="<?= BASE_URL ?>/shop.php?category=<?= e($parentCat['category']['slug']) ?>">
-          <span><?= e($parentCat['category']['name']) ?></span>
+        <div class="cat-card" style="background:<?= $catColors[$parentCat['category']['slug']] ?? 'linear-gradient(135deg,#191713,#8f887b)' ?>">
+          <a href="<?= BASE_URL ?>/shop.php?category=<?= e($parentCat['category']['slug']) ?>" style="color:inherit;text-decoration:none">
+            <strong><?= e($parentCat['category']['name']) ?></strong>
+          </a>
           <?php if (!empty($parentCat['children'])): ?>
-            <div style="font-size:0.75rem;opacity:0.8;margin-top:4px">
-              <?= count($parentCat['children']) ?> sub-categorie<?= count($parentCat['children']) > 1 ? 's' : '' ?>
+            <div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2)">
+              <?php foreach ($parentCat['children'] as $childCat): ?>
+                <a href="<?= BASE_URL ?>/shop.php?category=<?= e($childCat['slug']) ?>" 
+                   style="display:block;color:rgba(255,255,255,0.9);text-decoration:none;font-size:0.85em;padding:4px 0">
+                  ↳ <?= e($childCat['name']) ?>
+                </a>
+              <?php endforeach; ?>
             </div>
           <?php endif; ?>
-        </a>
+        </div>
       <?php endforeach; ?>
     </div>
   </div>

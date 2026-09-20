@@ -51,8 +51,6 @@ $categories = db()->query(
   'SELECT c.*, parent.name AS parent_name, (SELECT COUNT(*) FROM products p WHERE p.category_id=c.id) AS product_count
    FROM categories c LEFT JOIN categories parent ON parent.id=c.parent_id ORDER BY c.name')->fetchAll();
 
-$parentCategories = db()->query('SELECT * FROM categories WHERE parent_id IS NULL ORDER BY name ASC')->fetchAll();
-
 // Organize categories hierarchically for display
 $hierarchicalCategories = [];
 foreach ($categories as $cat) {
@@ -68,6 +66,24 @@ foreach ($categories as $cat) {
         $hierarchicalCategories[$cat['parent_id']]['children'][] = $cat;
     }
 }
+
+// Prevent selecting self as parent or own descendants as parent
+$availableParents = [];
+foreach ($categories as $cat) {
+    if ($cat['parent_id'] === null) {
+        $availableParents[] = $cat;
+    }
+}
+if ($edit) {
+    // Filter out self and own descendants
+    $filteredParents = [];
+    foreach ($availableParents as $parent) {
+        if ($parent['id'] !== $edit['id']) {
+            $filteredParents[] = $parent;
+        }
+    }
+    $availableParents = $filteredParents;
+}
 ?>
 
 <div class="dash-grid" style="grid-template-columns:1fr 1.6fr">
@@ -82,7 +98,7 @@ foreach ($categories as $cat) {
         <div class="field"><label>Parent Category</label>
           <select name="parent_id">
             <option value="">— None (Top-level) —</option>
-            <?php foreach ($parentCategories as $pc): ?>
+            <?php foreach ($availableParents as $pc): ?>
               <option value="<?= (int)$pc['id'] ?>" <?= (string)($edit['parent_id'] ?? '') === (string)$pc['id'] ? 'selected' : '' ?>><?= e($pc['name']) ?></option>
             <?php endforeach; ?>
           </select>

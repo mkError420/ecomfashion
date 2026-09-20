@@ -2,9 +2,14 @@
 require_once __DIR__ . '/../config/db.php';
 $pageTitle = $pageTitle ?? SITE_NAME;
 $activeNav = $activeNav ?? '';
-$categories = get_categories();
+$categories = get_category_tree();
 $bySlug = [];
-foreach ($categories as $c) { $bySlug[$c['slug']] = $c; }
+foreach ($categories as $parent) {
+    $bySlug[$parent['category']['slug']] = $parent['category'];
+    foreach ($parent['children'] as $child) {
+        $bySlug[$child['slug']] = $child;
+    }
+}
 $menuGroups = [
     "Women's Fashion" => ['saree', 'salwar-kameez', 'lehenga', 'western'],
     "Men's Fashion"   => ['panjabi'],
@@ -86,8 +91,13 @@ $cartCount = cart_count();
       <div class="menu-item has-drop menu-allcats">
         <button class="menu-link menu-trigger" type="button" aria-haspopup="true" aria-expanded="false">All Categories</button>
         <div class="dropdown">
-          <?php foreach ($categories as $c): ?>
-            <a href="<?= BASE_URL ?>/shop.php?category=<?= e($c['slug']) ?>"><?= e($c['name']) ?></a>
+          <?php foreach ($categories as $parentCat): ?>
+            <a href="<?= BASE_URL ?>/shop.php?category=<?= e($parentCat['category']['slug']) ?>" style="font-weight:600"><?= e($parentCat['category']['name']) ?></a>
+            <?php if (!empty($parentCat['children'])): ?>
+              <?php foreach ($parentCat['children'] as $childCat): ?>
+                <a href="<?= BASE_URL ?>/shop.php?category=<?= e($childCat['slug']) ?>" style="padding-left:20px;font-size:0.9em">↳ <?= e($childCat['name']) ?></a>
+              <?php endforeach; ?>
+            <?php endif; ?>
           <?php endforeach; ?>
         </div>
       </div>
@@ -100,7 +110,16 @@ $cartCount = cart_count();
           <button class="menu-link menu-trigger" type="button" aria-haspopup="true" aria-expanded="false"><?= e($label) ?></button>
           <div class="dropdown">
             <?php foreach ($items as $c): ?>
-              <a href="<?= BASE_URL ?>/shop.php?category=<?= e($c['slug']) ?>"><?= e($c['name']) ?></a>
+              <a href="<?= BASE_URL ?>/shop.php?category=<?= e($c['slug']) ?>" style="font-weight:600"><?= e($c['name']) ?></a>
+              <?php 
+                // Find subcategories for this parent category (only if it's a parent)
+                if ($c['parent_id'] === null) {
+                    $subCats = get_subcategories_by_parent_slug($c['slug']);
+                    foreach ($subCats as $childCat) {
+                        echo '<a href="' . BASE_URL . '/shop.php?category=' . e($childCat['slug']) . '" style="padding-left:20px;font-size:0.9em">↳ ' . e($childCat['name']) . '</a>';
+                    }
+                }
+              ?>
             <?php endforeach; ?>
             <?php if ($label === 'More'): ?>
               <a href="<?= BASE_URL ?>/contact.php">Contact Us</a>

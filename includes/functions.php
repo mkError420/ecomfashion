@@ -329,6 +329,34 @@ function get_category_tree(): array
     return $tree;
 }
 
+function get_flat_categories_with_hierarchy(): array
+{
+    $tree = get_category_tree();
+    $flat = [];
+    foreach ($tree as $parentData) {
+        $flat[] = [
+            'category' => $parentData['category'],
+            'level' => 0
+        ];
+        foreach ($parentData['children'] as $child) {
+            $flat[] = [
+                'category' => $child,
+                'level' => 1
+            ];
+        }
+    }
+    return $flat;
+}
+
+function get_subcategories_by_parent_slug(string $parentSlug): array
+{
+    $parent = get_category_by_slug($parentSlug);
+    if (!$parent || $parent['parent_id'] !== null) {
+        return [];
+    }
+    return get_subcategories($parent['id']);
+}
+
 function get_category_by_slug(string $slug): ?array
 {
     $stmt = db()->prepare('SELECT * FROM categories WHERE slug = ? LIMIT 1');
